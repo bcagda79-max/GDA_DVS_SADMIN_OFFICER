@@ -489,15 +489,15 @@ export default function VaultPage() {
                       <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-[#38bdf8] shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
-                          <span className="dmsans text-[10px] font-black uppercase tracking-[0.2em] text-white/30">System Integrity: Nominal</span>
+                          <span className="dmsans text-[10px] font-black uppercase tracking-[0.2em] text-white/30"></span>
                         </div>
                         <div className="h-4 w-px bg-white/[0.1]" />
                         <span className="dmsans text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                          Archival Database v2.4.0
+
                         </span>
                       </div>
                       <span className="dmsans text-[10px] font-black text-[#38bdf8]/40 uppercase tracking-[0.3em]">
-                        Authenticated Session: GDA-ADMIN-ALPHA
+                        GDA DVS
                       </span>
                     </div>
                   )}
