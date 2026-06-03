@@ -51,7 +51,7 @@ export function SignatureModal({
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setSignatures(data);
+      setSignatures(data as any);
     }
     setIsLoading(false);
   };
@@ -105,7 +105,7 @@ export function SignatureModal({
 
       const { error: insertError } = await supabase
         .from("saved_signatures")
-        .insert([{ name: newName, designation: newDesignation, image_url: imageUrl }]);
+        .insert([{ name: newName, designation: newDesignation, image_url: imageUrl }] as any);
 
       if (insertError) throw insertError;
 
