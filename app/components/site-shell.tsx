@@ -19,7 +19,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   const isAdminRoute = pathname?.startsWith("/admin");
   const isOfficerRoute = pathname === "/home" || pathname === "/history" || pathname === "/generate" || pathname === "/pending";
-  const hasCustomHeader = isAdminRoute || isOfficerRoute;
+  const isSplashRoute = pathname === "/";
+  const hasCustomHeader = isAdminRoute || isOfficerRoute || isSplashRoute;
 
   useEffect(() => {
     let mounted = true;

@@ -608,10 +608,7 @@ export default function AdminPage() {
                         <Sparkline value={Number(stat.value)} />
                       </div>
                     </div>
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(56,189,248,0.2)] bg-[rgba(56,189,248,0.08)] text-[#38bdf8] shadow-[0_0_16px_rgba(56,189,248,0.1)]">
-                      <Icon className="h-5 w-5" />
                     </div>
-                  </div>
                 </motion.div>
               );
             })}

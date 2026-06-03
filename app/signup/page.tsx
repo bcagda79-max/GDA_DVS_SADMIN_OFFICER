@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "../../lib/supabaseClient";
-import { Footer } from "@/components/ui/footer";
 import { AuthFeedback } from "@/components/ui/auth-feedback";
 import { Mail, Lock, User, Briefcase, Building2, UserPlus, ArrowLeft, Eye, EyeOff, LogIn } from "lucide-react";
 import { BackgroundPaths } from "@/components/ui/background-paths";
@@ -327,7 +326,6 @@ export default function SignUpPage() {
           </motion.div>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

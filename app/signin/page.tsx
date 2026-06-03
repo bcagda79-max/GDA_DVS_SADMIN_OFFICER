@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "../../lib/supabaseClient";
-import { Footer } from "@/components/ui/footer";
 import { AuthFeedback } from "@/components/ui/auth-feedback";
 import { Mail, Lock, LogIn, ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
 import { BackgroundPaths } from "@/components/ui/background-paths";
@@ -145,16 +144,7 @@ export default function SignInPage() {
         {/* Radial brand blending overlay */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.05)_0%,transparent_60%)] z-5" />
 
-        {/* Back Link */}
-        <div className="absolute top-6 left-6 z-30">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-4 py-2 text-xs font-semibold text-white/85 transition-all duration-300 hover:bg-[rgba(255,255,255,0.04)] hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 text-[#38bdf8]" />
-            <span>Go Back</span>
-          </Link>
-        </div>
+
 
         {/* Custom Perspective styles */}
         <style jsx global>{`
@@ -301,7 +291,6 @@ export default function SignInPage() {
           </motion.div>
         </div>
       </div>
-      <Footer />
     </>
   );
 }
