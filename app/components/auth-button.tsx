@@ -22,7 +22,7 @@ export function AuthButton() {
 
     load();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setEmail(session?.user?.email ?? null);
     });
 

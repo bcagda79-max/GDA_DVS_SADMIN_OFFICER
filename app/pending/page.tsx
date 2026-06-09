@@ -10,8 +10,8 @@ export default function PendingPage() {
   const supabase = getSupabaseClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data?.user) {
+    supabase.auth.getUser().then((result: any) => {
+      if (!result.data?.user) {
         router.replace("/signin");
       }
     });
