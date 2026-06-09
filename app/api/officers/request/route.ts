@@ -66,6 +66,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to create officer request.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("POST /api/officers/request error:", err);
+    const responseBody: any = { error: message };
+    if (process.env.NODE_ENV !== "production" && err instanceof Error) {
+      responseBody.stack = err.stack;
+    }
+    return NextResponse.json(responseBody, { status: 500 });
   }
 }

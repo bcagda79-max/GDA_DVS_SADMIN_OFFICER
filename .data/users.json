@@ -4,5 +4,35 @@
     "email": "bcagda79@gmail.com",
     "password_hash": "$2a$10$RB3qqMsP.Dij9dO5eL6L/e504wxg/1zBaK/UPUPlfUhabKwnSKcVO",
     "created_at": "2026-06-09T13:58:53.118Z"
+  },
+  {
+    "id": "fb46e517-6046-4e57-b1e4-a34edb94ad9f",
+    "email": "bcagda79@gmail.com",
+    "password_hash": "$2a$10$1wT1FAmz5ywviRVSVSwC6urh.4eq7K8PaW5pI4Qk9gHKbt2u/QTFi",
+    "created_at": "2026-06-09T14:09:32.424Z"
+  },
+  {
+    "id": "a13c76f3-074b-4c17-a460-e23f41234785",
+    "email": "test@gmail.com",
+    "password_hash": "$2a$10$DH6qkUzw/oQvclE0QSZ8Ge1YIEh/ThYsbiegeLeoFIpXhxyFR6Ueq",
+    "created_at": "2026-06-09T14:10:13.882Z"
+  },
+  {
+    "id": "9f626ae1-15bc-42df-b711-f3aae93a59fc",
+    "email": "test1@gmail.com",
+    "password_hash": "$2a$10$t6IlO8ZZ3wTyMI0wS4lcuOKW6O4SWhppbw1PCXNgRChsniy67XZu6",
+    "created_at": "2026-06-09T14:13:24.574Z"
+  },
+  {
+    "id": "d7580eb6-a795-438d-9a20-d1dcaf1b2c72",
+    "email": "test2@gmail.com",
+    "password_hash": "$2a$10$lv.KSjf57RusmGeg/b1UaeJ3PJk5StwldNwy4kZWLFkxbxQczDmw6",
+    "created_at": "2026-06-09T14:15:27.772Z"
+  },
+  {
+    "id": "42997a70-e9f5-49f6-b03f-0196cc970b20",
+    "email": "test4@gmail.com",
+    "password_hash": "$2a$10$hCw.arKiu56BlTeQjiHCYOJNyWdBCUmPEYRwnigCQoJhXn8wUi5SC",
+    "created_at": "2026-06-09T14:18:28.280Z"
   }
 ]
