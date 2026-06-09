@@ -33,26 +33,31 @@ function parseOrString(orStr: string, clauses: { text: string[]; params: any[] }
 
 export const getSupabaseAdmin = () => {
   const from = (table: string) => {
-    const state = {
+    const state: {
+      where: { text: string[]; params: any[] };
+      order: string;
+      limit: string;
+      selectCols: string;
+      single: boolean;
+      head?: boolean;
+      count?: string | null;
+    } = {
       where: { text: [] as string[], params: [] as any[] },
       order: "",
       limit: "",
       selectCols: "*",
       single: false,
+      head: false,
+      count: null,
     };
 
     const builder: any = {
       select(cols?: string, opts?: any) {
         if (typeof cols === "string" && cols.trim()) state.selectCols = cols;
-        // handle head/count
+        // handle head/count: mark flags on state and allow chaining
         if (opts && opts.head) {
-          // perform count immediately
-          return (async () => {
-            const where = buildWhere(state.where);
-            const q = `SELECT COUNT(*)::int AS count FROM ${table} ${where.sql}`;
-            const r = await query(q, where.params);
-            return { count: r.rows?.[0]?.count ?? 0 };
-          })();
+          state.head = true;
+          state.count = opts.count ?? null;
         }
         return builder;
       },
@@ -67,6 +72,22 @@ export const getSupabaseAdmin = () => {
       },
       or(cond: string) {
         parseOrString(cond, state.where);
+        return builder;
+      },
+      gte(col: string, val: any) {
+        state.where.text.push(`${col} >= $${state.where.params.length + 1}`);
+        state.where.params.push(val);
+        return builder;
+      },
+      lt(col: string, val: any) {
+        state.where.text.push(`${col} < $${state.where.params.length + 1}`);
+        state.where.params.push(val);
+        return builder;
+      },
+      in(col: string, vals: any[]) {
+        // Use Postgres ANY to compare against an array parameter
+        state.where.text.push(`${col} = ANY($${state.where.params.length + 1})`);
+        state.where.params.push(vals);
         return builder;
       },
       order(col: string, opts?: { ascending?: boolean }) {
@@ -121,6 +142,13 @@ export const getSupabaseAdmin = () => {
       // allow awaiting the builder directly
       async execute() {
         const where = buildWhere(state.where);
+        if (state.head) {
+          // Return count for head queries
+          const q = `SELECT COUNT(*)::int AS count FROM ${table} ${where.sql}`;
+          const r = await query(q, where.params);
+          return { count: r.rows?.[0]?.count ?? 0 };
+        }
+
         const q = `SELECT ${state.selectCols} FROM ${table} ${where.sql} ${state.order} ${state.limit}`;
         const r = await query(q, where.params);
         const rows = r.rows;
@@ -140,6 +168,12 @@ export const getSupabaseAdmin = () => {
       const base = path.join(process.cwd(), "uploads", bucket);
       return {
         async upload(filePath: string, buffer: Buffer, opts?: any) {
+          const dest = path.join(base, filePath);
+          await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+          await fs.promises.writeFile(dest, buffer);
+          return { data: { path: filePath }, error: null };
+        },
+        async update(filePath: string, buffer: Buffer, opts?: any) {
           const dest = path.join(base, filePath);
           await fs.promises.mkdir(path.dirname(dest), { recursive: true });
           await fs.promises.writeFile(dest, buffer);

@@ -72,6 +72,87 @@ export const getSupabaseClient = () => {
         return { data: null, error: null };
       },
     },
+    from(table: string) {
+      const state: any = { selectCols: "*", orderCol: "", orderAsc: true, where: [] as any[] };
+      const b: any = {
+        select(cols?: string) {
+          if (typeof cols === "string" && cols.trim()) state.selectCols = cols;
+          return b;
+        },
+        order(col: string, opts?: { ascending?: boolean }) {
+          state.orderCol = col;
+          state.orderAsc = opts?.ascending !== false;
+          return b;
+        },
+        eq(col: string, val: any) {
+          state.where.push({ col, op: "=", val });
+          return b;
+        },
+        maybeSingle() {
+          state.single = true;
+          return b;
+        },
+        async insert(payload: any) {
+          const res = await fetch(`/api/admin/${encodeURIComponent(table)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(Array.isArray(payload) ? payload : [payload]),
+            credentials: "include",
+          });
+          const json = await res.json().catch(() => null);
+          if (!res.ok) return { data: null, error: json?.error ?? { message: "insert_failed" } };
+          return { data: json?.data ?? null, error: null };
+        },
+        then(resolve: any, reject: any) {
+          // perform a GET with query params
+          const params = new URLSearchParams();
+          params.set("select", state.selectCols || "*");
+          if (state.orderCol) {
+            params.set("order", state.orderCol);
+            params.set("orderDir", state.orderAsc ? "asc" : "desc");
+          }
+          for (const w of state.where || []) {
+            params.append(`eq_${w.col}`, String(w.val));
+          }
+          const url = `/api/admin/${encodeURIComponent(table)}?${params.toString()}`;
+          return fetch(url, { credentials: "include" })
+            .then((r) => r.json())
+            .then((j) => {
+              if (j?.error) return reject(j.error);
+              // Supabase client expects { data, error }
+              const out = { data: j?.data ?? null, error: null };
+              return resolve(out);
+            })
+            .catch(reject);
+        },
+      };
+
+      return b;
+    },
+    storage: {
+      from(bucket: string) {
+        return {
+          async upload(filePath: string, file: File | Blob | Buffer) {
+            const form = new FormData();
+            if (file instanceof File || file instanceof Blob) form.append("file", file as File | Blob);
+            else form.append("buffer", new Blob([file as Buffer]));
+            form.append("path", filePath);
+            const res = await fetch(`/api/uploads/upload?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(filePath)}`, {
+              method: "POST",
+              body: form,
+              credentials: "include",
+            });
+            const j = await res.json().catch(() => null);
+            if (!res.ok) return { data: null, error: j?.error ?? { message: "upload_failed" } };
+            return { data: j?.data ?? null, error: null };
+          },
+          getPublicUrl(filePath: string) {
+            const publicUrl = `/api/uploads/${encodeURIComponent(bucket)}/${encodeURIComponent(filePath)}`;
+            return { data: { publicUrl }, error: null };
+          },
+        };
+      },
+    },
   });
 
   instance = make();
