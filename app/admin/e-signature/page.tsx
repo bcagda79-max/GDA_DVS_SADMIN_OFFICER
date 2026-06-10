@@ -571,8 +571,9 @@ function ESignatureContent() {
       const res = await fetch("/api/admin/e-signature", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      setSuccessMessage("Document signed and verified successfully! You can export the PDF now.");
+      setSuccessMessage("Document signed and verified successfully! Redirecting to the vault...");
       setTimeout(() => setSuccessMessage(null), 4000);
+      router.replace("/admin/vault");
     } catch (err: any) {
       setErrorMessage(err?.message || "Failed to save signed document.");
     } finally {

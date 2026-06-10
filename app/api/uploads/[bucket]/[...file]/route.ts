@@ -7,7 +7,8 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest, ctx: { params: Promise<{ bucket: string; file: string[] }> }) {
   try {
     const { bucket, file } = await ctx.params;
-    const relPath = file.join("/");
+    const decodedSegments = file.map((segment) => decodeURIComponent(segment));
+    const relPath = decodedSegments.join("/");
     const filePath = path.join(process.cwd(), "uploads", bucket, relPath);
     if (!fs.existsSync(filePath)) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const data = await fs.promises.readFile(filePath);

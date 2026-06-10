@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { query } from "@/lib/db";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getOfficerContextByUserId } from "@/lib/officer-access";
 
@@ -66,19 +67,14 @@ export async function POST(request: Request) {
       throw uploadError;
     }
 
-    // 4. Mark the document as verified + signed
-    const { error: updateError } = await (supabaseAdmin.from("documents") as any)
-      .update({
-        verified: true,
-        verified_by: adminUserId,
-        verified_at: new Date().toISOString(),
-        mime_type: "application/pdf",
-        file_size: pdfBuffer.length,
-      })
-      .eq("id", documentId);
+    // 4. Mark the document as verified + signed using a raw query to preserve boolean typing.
+    const updateResult = await query(
+      `UPDATE documents SET verified = $1, verified_by = $2, verified_at = $3, mime_type = $4, file_size = $5 WHERE id = $6 RETURNING *`,
+      [true, adminUserId, new Date().toISOString(), "application/pdf", pdfBuffer.length, documentId]
+    );
 
-    if (updateError) {
-      throw updateError;
+    if (!updateResult.rows || updateResult.rows.length === 0) {
+      return NextResponse.json({ error: "Failed to update document status." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, documentId });

@@ -37,13 +37,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing Supabase admin client." }, { status: 500 });
     }
 
-    const { data: officer } = await (supabaseAdmin.from("officers") as any)
-      .select("user_id, email, full_name, role")
-      .eq("user_id", userId)
-      .maybeSingle();
+    let officer: any = null;
+    try {
+      const res = await (supabaseAdmin.from("officers") as any)
+        .select("user_id, email, full_name, role")
+        .eq("user_id", userId)
+        .maybeSingle();
+      officer = res?.data ?? null;
+    } catch (e) {
+      officer = null;
+    }
+
+    // If not found by user_id, allow email fallback (some accounts may be pending linking)
+    if (!officer && body.email) {
+      try {
+        const r2 = await (supabaseAdmin.from("officers") as any)
+          .select("user_id, email, full_name, role")
+          .eq("email", String(body.email).trim())
+          .maybeSingle();
+        officer = r2?.data ?? null;
+      } catch (e) {
+        officer = null;
+      }
+    }
 
     if (!officer) {
-      console.error(`login-log: officer not found for userId=${userId}`);
+      console.error(`login-log: officer not found for userId=${userId} and email=${body.email ?? "<none>"}`);
       return NextResponse.json({ error: "Officer not found." }, { status: 404 });
     }
 

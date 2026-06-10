@@ -44,6 +44,26 @@ export async function getOfficerByUserId(userId: string) {
   return data as OfficerRecord;
 }
 
+export async function getOfficerByEmail(email: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    return null;
+  }
+
+  const { data, error } = await (supabaseAdmin.from("officers") as any)
+    .select(
+      "id, user_id, email, full_name, designation, department, role, confirmed, approved, approved_at, approved_by, created_at",
+    )
+    .eq("email", email)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as OfficerRecord;
+}
+
 export async function getOfficerContextByUserId(userId: string): Promise<OfficerContext | null> {
   const officer = await getOfficerByUserId(userId);
 
@@ -51,6 +71,17 @@ export async function getOfficerContextByUserId(userId: string): Promise<Officer
     return null;
   }
 
+  return {
+    ...officer,
+    isAdmin: officer.role === "admin",
+    canGenerate: officer.role === "admin" || officer.approved,
+    isPending: officer.role !== "admin" && !officer.approved,
+  };
+}
+
+export async function getOfficerContextByEmail(email: string): Promise<OfficerContext | null> {
+  const officer = await getOfficerByEmail(email);
+  if (!officer) return null;
   return {
     ...officer,
     isAdmin: officer.role === "admin",

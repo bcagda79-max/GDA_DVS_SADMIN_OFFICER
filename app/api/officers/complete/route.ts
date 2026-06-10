@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { query } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -24,45 +25,50 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing Supabase admin client." }, { status: 500 });
     }
 
-    const { data: existingOfficer } = await (supabaseAdmin.from("officers") as any)
-      .select("id, role, approved")
-      .eq("email", email)
-      .maybeSingle();
+    try {
+      const { data: existingOfficer } = await (supabaseAdmin.from("officers") as any)
+        .select("id, role, approved")
+        .eq("email", email)
+        .maybeSingle();
 
-    if (existingOfficer) {
-      const updatePayload: Record<string, unknown> = {
-        user_id: userId,
-        email,
-        role: existingOfficer.role ?? role ?? "officer",
-        confirmed: true,
-        approved: existingOfficer.role === "admin" ? true : existingOfficer.approved ?? false,
-      };
+      if (existingOfficer) {
+        const updatePayload: Record<string, unknown> = {
+          user_id: userId,
+          email,
+          role: existingOfficer.role ?? role ?? "officer",
+          confirmed: true,
+          approved: existingOfficer.role === "admin" ? true : existingOfficer.approved ?? false,
+        };
 
-      if (fullName) updatePayload.full_name = fullName;
-      if (designation) updatePayload.designation = designation;
-      if (department) updatePayload.department = department;
+        if (fullName) updatePayload.full_name = fullName;
+        if (designation) updatePayload.designation = designation;
+        if (department) updatePayload.department = department;
 
-      const { error } = await (supabaseAdmin.from("officers") as any)
-        .update(updatePayload)
-        .eq("email", email);
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        await (supabaseAdmin.from("officers") as any).update(updatePayload).eq("email", email);
+      } else {
+        await (supabaseAdmin.from("officers") as any).insert({
+          user_id: userId,
+          email,
+          full_name: fullName ?? email,
+          designation: designation ?? "Officer",
+          department: department ?? "BCA",
+          role: role === "admin" ? "admin" : "officer",
+          confirmed: true,
+          approved: role === "admin",
+        });
       }
-    } else {
-      const { error } = await (supabaseAdmin.from("officers") as any).insert({
-        user_id: userId,
-        email,
-        full_name: fullName ?? email,
-        designation: designation ?? "Officer",
-        department: department ?? "BCA",
-        role: role === "admin" ? "admin" : "officer",
-        confirmed: true,
-        approved: role === "admin",
-      });
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (err) {
+      console.error("/api/officers/complete supabase error:", err);
+      try {
+        await query(
+          `INSERT INTO officers (user_id, email, confirmed, full_name, designation, department, role, approved)
+           VALUES ($1, $2, true, $3, $4, $5, $6, $7)
+           ON CONFLICT (email) DO UPDATE SET user_id = EXCLUDED.user_id, confirmed = true, full_name = COALESCE(EXCLUDED.full_name, officers.full_name), designation = COALESCE(EXCLUDED.designation, officers.designation), department = COALESCE(EXCLUDED.department, officers.department), role = COALESCE(EXCLUDED.role, officers.role), approved = COALESCE(EXCLUDED.approved, officers.approved)`,
+          [userId, email, fullName ?? email, designation ?? "Officer", department ?? "BCA", role === "admin" ? "admin" : "officer", role === "admin"]
+        );
+      } catch (sqlErr) {
+        console.error("/api/officers/complete fallback SQL error:", sqlErr);
+        return NextResponse.json({ error: "Failed to link or create officer." }, { status: 500 });
       }
     }
 

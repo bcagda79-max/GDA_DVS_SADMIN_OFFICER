@@ -7,9 +7,12 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
+    const email = url.searchParams.get("email")?.trim();
 
     if (!userId) {
-      return NextResponse.json({ allowed: false }, { status: 400 });
+      if (!email) {
+        return NextResponse.json({ allowed: false }, { status: 400 });
+      }
     }
 
     const supabaseAdmin = getSupabaseAdmin();
@@ -17,21 +20,28 @@ export async function GET(request: Request) {
       return NextResponse.json({ allowed: false }, { status: 500 });
     }
 
-    const { data, error } = await (supabaseAdmin.from("officers") as any)
-      .select("id")
-      .eq("user_id", userId)
-      .eq("confirmed", true)
-      .maybeSingle();
+    const queryBuilder = (supabaseAdmin.from("officers") as any).select("id, approved, confirmed");
+    if (userId) {
+      queryBuilder.eq("user_id", userId);
+    } else {
+      queryBuilder.eq("email", email);
+    }
+    const { data, error } = await queryBuilder.eq("confirmed", true).maybeSingle();
 
     if (error) {
       return NextResponse.json({ allowed: false }, { status: 500 });
     }
 
     if (!data) {
-      return NextResponse.json({ allowed: false });
+      return NextResponse.json({ allowed: false, emailFound: !!email, pending: false });
     }
 
-    return NextResponse.json({ allowed: true });
+    return NextResponse.json({
+      allowed: true,
+      approved: Boolean(data.approved),
+      pending: Boolean(data.confirmed && !data.approved),
+      emailFound: true,
+    });
   } catch (err) {
     return NextResponse.json({ allowed: false }, { status: 500 });
   }

@@ -55,7 +55,10 @@ export default function AuthCallbackPage() {
           // ignore
         }
 
-        const response = await fetch(`/api/access/context?userId=${user.id}`);
+        let response = await fetch(`/api/access/context?userId=${user.id}`);
+        if (response.status === 404) {
+          response = await fetch(`/api/access/context?email=${encodeURIComponent(user.email)}`);
+        }
         const context = await response.json().catch(() => null);
 
         try {
@@ -64,6 +67,7 @@ export default function AuthCallbackPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               userId: user.id,
+              email: user.email,
               status: context?.isAdmin ? "admin" : context?.canGenerate ? "approved" : "pending",
               userAgent: navigator.userAgent,
             }),

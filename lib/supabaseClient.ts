@@ -147,7 +147,11 @@ export const getSupabaseClient = () => {
             return { data: j?.data ?? null, error: null };
           },
           getPublicUrl(filePath: string) {
-            const publicUrl = `/api/uploads/${encodeURIComponent(bucket)}/${encodeURIComponent(filePath)}`;
+            const encodedPath = filePath
+              .split("/")
+              .map((segment) => encodeURIComponent(segment))
+              .join("/");
+            const publicUrl = `/api/uploads/${encodeURIComponent(bucket)}/${encodedPath}`;
             return { data: { publicUrl }, error: null };
           },
         };

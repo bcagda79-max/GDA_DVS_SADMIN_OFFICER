@@ -183,24 +183,24 @@ function VerifyContent() {
   };
 
   const renderRows = (rows: ResultRow[]) => (
-    <div className="overflow-hidden rounded-2xl border border-[#38bdf8]/10 bg-[#0f172a]/95">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-[#38bdf8]/10 bg-white dark:bg-[#0f172a]/95">
       {rows.map((row, idx) => (
         <div
           key={row.label}
-          className={`grid grid-cols-1 gap-1 border-b border-white/5 px-5 py-4 last:border-b-0 sm:grid-cols-[160px_1fr] sm:items-center ${idx % 2 === 0 ? "bg-white/5" : "bg-transparent"
+          className={`grid grid-cols-1 gap-1 border-b border-slate-100 dark:border-white/5 px-5 py-4 last:border-b-0 sm:grid-cols-[160px_1fr] sm:items-center ${idx % 2 === 0 ? "bg-slate-50 dark:bg-white/5" : "bg-transparent"
             }`}
         >
-          <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 dmsans">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-white/40 dmsans">
             {row.label}
           </p>
-          <div className="text-sm text-white/85 font-medium dmsans">
+          <div className="text-sm text-slate-900 dark:text-white/85 font-medium dmsans">
             {row.label === "Status" ? (
-              <span className="inline-flex items-center rounded-full border border-emerald-600/10 bg-emerald-700/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
-                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center rounded-full border border-emerald-200 dark:border-emerald-600/10 bg-emerald-50 dark:bg-emerald-700/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 Active
               </span>
             ) : row.monospace ? (
-              <span className="font-mono text-xs font-semibold tracking-wider bg-[#38bdf8]/5 border border-[#38bdf8]/10 rounded px-2 py-0.5 text-white/85">
+              <span className="font-mono text-xs font-semibold tracking-wider bg-slate-100 dark:bg-[#38bdf8]/5 border border-slate-200 dark:border-[#38bdf8]/10 rounded px-2 py-0.5 text-slate-900 dark:text-white/85">
                 {row.value}
               </span>
             ) : (
@@ -284,18 +284,18 @@ function VerifyContent() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6 space-y-4 backdrop-blur-sm">
+        <div className="rounded-2xl border border-red-500/10 bg-red-50 dark:bg-red-500/5 p-6 space-y-4 backdrop-blur-sm">
           <div className="flex items-start gap-3">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
-            <p className="text-sm leading-relaxed dmsans font-light text-red-200">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-500" />
+            <p className="text-sm leading-relaxed dmsans font-light text-red-900 dark:text-red-200">
               We could not find any active registry records corresponding to the submitted Document ID. Please double check characters or spacing formats.
             </p>
           </div>
 
-          <div className="rounded-xl border border-red-500/10 bg-red-500/5 p-4">
+          <div className="rounded-xl border border-red-500/10 bg-red-100 dark:bg-red-500/5 p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <p className="text-xs leading-relaxed dmsans font-light text-red-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+              <p className="text-xs leading-relaxed dmsans font-light text-red-900 dark:text-red-300">
                 Warning: If this document has been presented to you as a certified original GDA certificate or land deed, it might be fabricated. Report suspicious documents to legal authorities immediately.
               </p>
             </div>

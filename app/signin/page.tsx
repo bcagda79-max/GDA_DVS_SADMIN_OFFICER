@@ -37,6 +37,7 @@ export default function SignInPage() {
         body: JSON.stringify({
           userId,
           status,
+          email: email,
           userAgent,
           browser: userAgent.includes("Edg/")
             ? "Edge"
@@ -101,15 +102,18 @@ export default function SignInPage() {
       console.error("officers.complete linking failed:", e);
     }
 
-    const response = await fetch(`/api/access/context?userId=${user.id}`);
+    let response = await fetch(`/api/access/context?userId=${user.id}`);
+    if (response.status === 404) {
+      response = await fetch(`/api/access/context?email=${encodeURIComponent(user.email)}`);
+    }
     const context = await response.json().catch(() => null);
 
     if (!context?.found) {
       setFeedback({
-        type: "error",
-        message: "Your account is not yet linked to the officer panel. Please contact the admin.",
+        type: "success",
+        message: "Your request is pending admin approval. Please wait for the admin to accept your request.",
       });
-      await supabase.auth.signOut();
+      router.replace("/pending");
       setLoading(false);
       return;
     }

@@ -34,7 +34,9 @@ export async function GET(request: Request) {
     }
 
     // Append cache-buster to prevent aggressive browser caching of PDFs
-    const urlWithCacheBuster = data.signedUrl ? `${data.signedUrl}&t=${Date.now()}` : null;
+    const urlWithCacheBuster = data.signedUrl
+      ? `${data.signedUrl}${data.signedUrl.includes("?") ? "&" : "?"}t=${Date.now()}`
+      : null;
 
     return NextResponse.json({ url: urlWithCacheBuster }, { status: 200 });
   } catch (error: any) {

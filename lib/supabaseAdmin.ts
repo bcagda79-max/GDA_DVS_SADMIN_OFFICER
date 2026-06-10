@@ -31,7 +31,7 @@ function parseOrString(orStr: string, clauses: { text: string[]; params: any[] }
   if (orParts.length) clauses.text.push(`(${orParts.join(" OR ")})`);
 }
 
-export const getSupabaseAdmin = () => {
+const getSupabaseAdmin = () => {
   const from = (table: string) => {
     const state: {
       where: { text: string[]; params: any[] };
@@ -41,6 +41,8 @@ export const getSupabaseAdmin = () => {
       single: boolean;
       head?: boolean;
       count?: string | null;
+      op?: "select" | "update" | "delete";
+      payload?: any;
     } = {
       where: { text: [] as string[], params: [] as any[] },
       order: "",
@@ -49,6 +51,8 @@ export const getSupabaseAdmin = () => {
       single: false,
       head: false,
       count: null,
+      op: "select",
+      payload: null,
     };
 
     const builder: any = {
@@ -124,36 +128,57 @@ export const getSupabaseAdmin = () => {
         // fallback to simple insert
         return builder.insert(row as any);
       },
-      async update(payload: any) {
-        const setCols = Object.keys(payload);
-        const setSql = setCols.map((c, i) => `${c} = $${i + 1}`).join(", ");
-        const params = setCols.map((c) => payload[c]);
-        const where = buildWhere(state.where);
-        const q = `UPDATE ${table} SET ${setSql} ${where.sql} RETURNING *`;
-        const r = await query(q, params.concat(where.params));
-        return { data: r.rows, error: null };
+      update(payload: any) {
+        state.op = "update";
+        state.payload = payload;
+        return builder;
       },
-      async delete() {
-        const where = buildWhere(state.where);
-        const q = `DELETE FROM ${table} ${where.sql} RETURNING *`;
-        const r = await query(q, where.params);
-        return { data: r.rows, error: null };
+      delete() {
+        state.op = "delete";
+        return builder;
       },
       // allow awaiting the builder directly
       async execute() {
-        const where = buildWhere(state.where);
-        if (state.head) {
-          // Return count for head queries
-          const q = `SELECT COUNT(*)::int AS count FROM ${table} ${where.sql}`;
-          const r = await query(q, where.params);
-          return { count: r.rows?.[0]?.count ?? 0 };
-        }
+        try {
+          const where = buildWhere(state.where);
+          if (state.head) {
+            // Return count for head queries
+            const q = `SELECT COUNT(*)::int AS count FROM ${table} ${where.sql}`;
+            const r = await query(q, where.params);
+            return { count: r.rows?.[0]?.count ?? 0, error: null };
+          }
 
-        const q = `SELECT ${state.selectCols} FROM ${table} ${where.sql} ${state.order} ${state.limit}`;
-        const r = await query(q, where.params);
-        const rows = r.rows;
-        if (state.single) return { data: rows?.[0] ?? null };
-        return { data: rows };
+          if (state.op === "update") {
+            const payload = state.payload ?? {};
+            const setCols = Object.keys(payload);
+            const setSql = setCols.map((c, i) => `${c} = $${i + 1}`).join(", ");
+            const params = setCols.map((c) => payload[c]);
+            
+            let shiftedWhereSql = where.sql;
+            if (setCols.length > 0) {
+              shiftedWhereSql = where.sql.replace(/\$(\d+)/g, (match, num) => `$${parseInt(num, 10) + setCols.length}`);
+            }
+
+            const q = `UPDATE ${table} SET ${setSql} ${shiftedWhereSql} RETURNING *`;
+            const r = await query(q, params.concat(where.params));
+            return { data: r.rows, error: null };
+          }
+
+          if (state.op === "delete") {
+            const q = `DELETE FROM ${table} ${where.sql} RETURNING *`;
+            const r = await query(q, where.params);
+            return { data: r.rows, error: null };
+          }
+
+          const q = `SELECT ${state.selectCols} FROM ${table} ${where.sql} ${state.order} ${state.limit}`;
+          const r = await query(q, where.params);
+          const rows = r.rows;
+          if (state.single) return { data: rows?.[0] ?? null, error: null };
+          return { data: rows, error: null };
+        } catch (err: any) {
+          console.error(`SupabaseAdmin shim error on table ${table}:`, err);
+          return { data: null, error: err };
+        }
       },
       then(resolve: any, reject: any) {
         return builder.execute().then(resolve, reject);
@@ -200,4 +225,5 @@ export const getSupabaseAdmin = () => {
   return { from, storage } as any;
 };
 
+export { getSupabaseAdmin };
 export default getSupabaseAdmin;

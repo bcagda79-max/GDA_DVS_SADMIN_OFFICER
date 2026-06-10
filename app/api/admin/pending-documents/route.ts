@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       .from("documents")
       .select("id, department, title, recipient_name, issue_date, expiry_date, storage_path, processed_file_name, created_at")
       .eq("verified", false)
-      .or(`is_forwarded.eq.true,processed_by.eq.${userId}`)
+      .eq("is_forwarded", true)
       .order("created_at", { ascending: false });
 
     // If the DB schema hasn't been migrated to include `is_forwarded` / `verified`
